@@ -1,0 +1,79 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#threejs-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+#foreground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#pulsing-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+#icons-and-buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#icons-and-buttons a {
+    margin: 10px 0;
+}
+
+#icons-and-buttons img {
+    width: 50px;
+    height: 50px;
+}
+
+#icons-and-buttons button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+#icons-and-buttons button:hover {
+    background-color: #ddd;
+}
