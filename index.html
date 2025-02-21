@@ -152,8 +152,7 @@
         </div>
         <div class="buttons">
             <a href="https://example.com/works" target="_blank">Works</a>
-            <a href="https://deserted-bat-b50.notion.site/194cff96ac7080768860ca10ae32f458?v=197cff96ac708085b34d000c28004f30"
-                target="_blank">Blog</a>
+            <a href="http://deserted-bat-b50.notion.site" target="_blank">Blog</a>
         </div>
     </div>
     <script>
@@ -167,62 +166,76 @@
 
         // テクスチャとしての画像の読み込み時に調整
         const textureLoader = new THREE.TextureLoader();
-        const imageTexture = textureLoader.load('https://images.ctfassets.net/kftzwdyauwt9/3gDBc446Nxn0ByyZMZdFVD/1e993b5470a4fc82279d2099ddef8321/Catcus_Heatmap_2.png?w=3840&q=90&fm=webp', () => {
+        const imageTexture = textureLoader.load('Catcus_Heatmap.png', () => {
             imageTexture.wrapS = imageTexture.wrapT = THREE.RepeatWrapping;
-            imageTexture.repeat.set(2, 2); // 横方向、縦方向に2回繰り返す例
+            imageTexture.repeat.set(2, 2);
         });
 
         // シェーダーマテリアル
         const material = new THREE.ShaderMaterial({
             uniforms: {
                 time: { value: 0.0 },
-                image: { value: imageTexture }
+                image: { value: imageTexture },
+                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
             },
             vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
             fragmentShader: `
-        uniform sampler2D image;
-        uniform float time;
-        varying vec2 vUv;
-        
-        // 単純なサイン波による歪み関数
-        vec2 getDistortedUV(vec2 uv, float time) {
-            float distortionX = sin(uv.y * 10.0 + time * 0.5) * 0.01;
-            float distortionY = sin(uv.x * 8.0 + time * 0.4) * 0.008;
+            uniform sampler2D image;
+            uniform float time;
+            uniform vec2 resolution;
+            varying vec2 vUv;
+
+            vec2 rotate(vec2 uv, float angle) {
+                float s = sin(angle);
+                float c = cos(angle);
+                mat2 rot = mat2(c, -s, s, c);
+                return rot * (uv - 0.5) + 0.5;
+            }
+
+            vec2 getComplexDistortion(vec2 uv) {
+                float t = time * 0.3;
+                vec2 dist = vec2(0.0);
+                
+                dist.x += sin(uv.y * 3.0 + t) * 0.03;
+                dist.y += sin(uv.x * 2.5 + t * 0.8) * 0.02;
+                
+                dist.x += sin(uv.y * 5.0 + t * 1.2) * 0.015;
+                dist.y += sin(uv.x * 6.0 + t * 1.1) * 0.015;
+                
+                dist.x += sin(uv.y * 9.0 + t * 1.5) * 0.008;
+                dist.y += sin(uv.x * 8.0 + t * 1.8) * 0.008;
+                
+                float distanceFromCenter = length(uv - 0.5);
+                float edgeFactor = smoothstep(0.0, 0.6, distanceFromCenter);
+                dist *= (1.0 - edgeFactor * 0.5);
+                
+                return dist;
+            }
             
-            // 中央部分の歪みを弱める（画像の主要部分を保存）
-            float distanceFromCenter = length(uv - 0.5);
-            float edgeFactor = smoothstep(0.0, 0.5, distanceFromCenter);
-            
-            return vec2(
-                uv.x + distortionX * edgeFactor,
-                uv.y + distortionY * edgeFactor
-            );
-        }
-        
-        void main() {
-            // 歪んだUV座標を計算
-            vec2 distortedUV = getDistortedUV(vUv, time);
-            
-            // 画像をサンプリング
-            vec4 color = texture2D(image, distortedUV);
-            
-            // ほんのりと呼吸するような明暗の変化を追加
-            float brightnessVariation = sin(time * 0.2) * 0.05 + 0.95;
-            color.rgb *= brightnessVariation;
-            
-            gl_FragColor = color;
-        }
-    `
+            void main() {
+                vec2 rotatedUV = rotate(vUv, time * 0.05);
+                vec2 distortedUV = rotatedUV + getComplexDistortion(rotatedUV);
+                vec4 color = texture2D(image, distortedUV);
+                
+                float brightness = sin(time * 0.2) * 0.1 + 0.9;
+                color.rgb *= brightness;
+                
+                float hueShift = sin(time * 0.1) * 0.02;
+                color.rgb += vec3(hueShift, hueShift * 0.5, -hueShift);
+                
+                gl_FragColor = color;
+            }
+        `
         });
 
         // アスペクト比に合わせた平面ジオメトリの作成
-        const planeWidth = 2 * camera.aspect; // 幅を調整
+        const planeWidth = 2 * camera.aspect;
         const planeHeight = 2;
         const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
 
@@ -240,11 +253,12 @@
         }
         animate();
 
-        // ウィンドウサイズ変更対応
+        // ウィンドウサイズ変更時にresolutionも更新
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
         });
 
     </script>
