@@ -8,7 +8,6 @@ float fbm(vec3 st) {
 }
 
 vec3 getColor(vec2 uv, float noise) {
-    // 改善された色パレット
     vec3 yellow = vec3(1.0, 0.878, 0.510);    // #FFE082
     vec3 salmon = vec3(1.0, 0.671, 0.569);      // #FFAB91
     vec3 lightBlue = vec3(0.565, 0.792, 0.976);   // #90CAF9
