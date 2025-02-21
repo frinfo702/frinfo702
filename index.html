@@ -164,102 +164,123 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // テクスチャとしての画像の読み込み時に調整
-        const textureLoader = new THREE.TextureLoader();
-        const imageTexture = textureLoader.load('Catcus_Heatmap.png', () => {
-            imageTexture.wrapS = imageTexture.wrapT = THREE.RepeatWrapping;
-            imageTexture.repeat.set(2, 2);
-        });
+        // 背景画像の読み込み処理を非同期関数として定義
+        async function getRandomBackgroundImage() {
+            try {
+                const response = await fetch('/images/'); // imagesディレクトリの一覧を取得
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const imageFiles = Array.from(doc.querySelectorAll('a'))
+                    .map(a => a.href)
+                    .filter(href => href.match(/\.(jpg|jpeg|png|gif)$/i));
 
-        // シェーダーマテリアル
-        const material = new THREE.ShaderMaterial({
-            uniforms: {
-                time: { value: 0.0 },
-                image: { value: imageTexture },
-                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-            },
-            vertexShader: `
-            varying vec2 vUv;
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                return imageFiles[Math.floor(Math.random() * imageFiles.length)];
+            } catch (error) {
+                console.error('画像の読み込みに失敗しました:', error);
+                return 'Catcus_Heatmap.png'; // エラー時のフォールバック
             }
-        `,
-            fragmentShader: `
-            uniform sampler2D image;
-            uniform float time;
-            uniform vec2 resolution;
-            varying vec2 vUv;
-
-            vec2 rotate(vec2 uv, float angle) {
-                float s = sin(angle);
-                float c = cos(angle);
-                mat2 rot = mat2(c, -s, s, c);
-                return rot * (uv - 0.5) + 0.5;
-            }
-
-            vec2 getComplexDistortion(vec2 uv) {
-                float t = time * 0.3;
-                vec2 dist = vec2(0.0);
-                
-                dist.x += sin(uv.y * 3.0 + t) * 0.03;
-                dist.y += sin(uv.x * 2.5 + t * 0.8) * 0.02;
-                
-                dist.x += sin(uv.y * 5.0 + t * 1.2) * 0.015;
-                dist.y += sin(uv.x * 6.0 + t * 1.1) * 0.015;
-                
-                dist.x += sin(uv.y * 9.0 + t * 1.5) * 0.008;
-                dist.y += sin(uv.x * 8.0 + t * 1.8) * 0.008;
-                
-                float distanceFromCenter = length(uv - 0.5);
-                float edgeFactor = smoothstep(0.0, 0.6, distanceFromCenter);
-                dist *= (1.0 - edgeFactor * 0.5);
-                
-                return dist;
-            }
-            
-            void main() {
-                vec2 rotatedUV = rotate(vUv, time * 0.05);
-                vec2 distortedUV = rotatedUV + getComplexDistortion(rotatedUV);
-                vec4 color = texture2D(image, distortedUV);
-                
-                float brightness = sin(time * 0.2) * 0.1 + 0.9;
-                color.rgb *= brightness;
-                
-                float hueShift = sin(time * 0.1) * 0.02;
-                color.rgb += vec3(hueShift, hueShift * 0.5, -hueShift);
-                
-                gl_FragColor = color;
-            }
-        `
-        });
-
-        // アスペクト比に合わせた平面ジオメトリの作成
-        const planeWidth = 2 * camera.aspect;
-        const planeHeight = 2;
-        const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
-
-        const plane = new THREE.Mesh(geometry, material);
-        scene.add(plane);
-
-        // カメラ位置
-        camera.position.z = 1;
-
-        // アニメーションループ
-        function animate() {
-            requestAnimationFrame(animate);
-            material.uniforms.time.value += 0.01;
-            renderer.render(scene, camera);
         }
-        animate();
 
-        // ウィンドウサイズ変更時にresolutionも更新
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-        });
+        // テクスチャの読み込みを非同期で実行
+        (async () => {
+            const backgroundImagePath = await getRandomBackgroundImage();
+            const textureLoader = new THREE.TextureLoader();
+            const imageTexture = textureLoader.load(backgroundImagePath, () => {
+                imageTexture.wrapS = imageTexture.wrapT = THREE.RepeatWrapping;
+                imageTexture.repeat.set(2, 2);
+            });
+
+            // シェーダーマテリアル
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0.0 },
+                    image: { value: imageTexture },
+                    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                },
+                vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+                fragmentShader: `
+                uniform sampler2D image;
+                uniform float time;
+                uniform vec2 resolution;
+                varying vec2 vUv;
+
+                vec2 rotate(vec2 uv, float angle) {
+                    float s = sin(angle);
+                    float c = cos(angle);
+                    mat2 rot = mat2(c, -s, s, c);
+                    return rot * (uv - 0.5) + 0.5;
+                }
+
+                vec2 getComplexDistortion(vec2 uv) {
+                    float t = time * 0.3;
+                    vec2 dist = vec2(0.0);
+                    
+                    dist.x += sin(uv.y * 3.0 + t) * 0.03;
+                    dist.y += sin(uv.x * 2.5 + t * 0.8) * 0.02;
+                    
+                    dist.x += sin(uv.y * 5.0 + t * 1.2) * 0.015;
+                    dist.y += sin(uv.x * 6.0 + t * 1.1) * 0.015;
+                    
+                    dist.x += sin(uv.y * 9.0 + t * 1.5) * 0.008;
+                    dist.y += sin(uv.x * 8.0 + t * 1.8) * 0.008;
+                    
+                    float distanceFromCenter = length(uv - 0.5);
+                    float edgeFactor = smoothstep(0.0, 0.6, distanceFromCenter);
+                    dist *= (1.0 - edgeFactor * 0.5);
+                    
+                    return dist;
+                }
+                
+                void main() {
+                    vec2 rotatedUV = rotate(vUv, time * 0.05);
+                    vec2 distortedUV = rotatedUV + getComplexDistortion(rotatedUV);
+                    vec4 color = texture2D(image, distortedUV);
+                    
+                    float brightness = sin(time * 0.2) * 0.1 + 0.9;
+                    color.rgb *= brightness;
+                    
+                    float hueShift = sin(time * 0.1) * 0.02;
+                    color.rgb += vec3(hueShift, hueShift * 0.5, -hueShift);
+                    
+                    gl_FragColor = color;
+                }
+            `
+            });
+
+            // アスペクト比に合わせた平面ジオメトリの作成
+            const planeWidth = 2 * camera.aspect;
+            const planeHeight = 2;
+            const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+
+            const plane = new THREE.Mesh(geometry, material);
+            scene.add(plane);
+
+            // カメラ位置
+            camera.position.z = 1;
+
+            // アニメーションループ
+            function animate() {
+                requestAnimationFrame(animate);
+                material.uniforms.time.value += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // ウィンドウサイズ変更時にresolutionも更新
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+            });
+        })();
 
     </script>
 </body>
