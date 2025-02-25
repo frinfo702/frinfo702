@@ -4,17 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
+    <title>Portfolio | frinfo702</title>
     <style>
-        body {
+        /* === ベーススタイル === */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
             overflow: hidden;
+            background-color: #f8f9fa;
         }
 
         canvas {
             display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
         }
 
+        /* === メインコンテンツ === */
         .front {
             position: absolute;
             top: 0;
@@ -25,17 +39,30 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        /* === アバターサークル === */
+        .avatar-container {
+            position: relative;
+            margin-bottom: 30px;
         }
 
         .circle {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, #ffffff 0%, #d0e8ff 100%);
-            border-radius: 60px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            animation: organicPulse 5s infinite ease-in-out;
-            /* 周期を5秒に */
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #ffffff 0%, #E4E4DF 100%);
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: organicPulse 6s infinite ease-in-out;
             position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease-out;
+        }
+
+        .circle:hover {
+            transform: scale(1.05) translateY(-5px);
         }
 
         .circle::before {
@@ -45,11 +72,23 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 60px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
             box-sizing: border-box;
-            animation: waveEdge 5.5s infinite ease-in-out;
-            /* 少し異なる周期で奥行きを */
+            animation: waveEdge 6.5s infinite ease-in-out;
+        }
+
+        .circle::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-sizing: border-box;
+            animation: outerWave 8s infinite ease-in-out;
         }
 
         @keyframes organicPulse {
@@ -57,17 +96,16 @@
                 transform: scale(1) translateY(0) rotate(0deg);
             }
 
-            25% {
-                transform: scale(1.02) translateY(-3px) rotate(1deg);
-                /* 上下と微回転 */
+            30% {
+                transform: scale(1.02) translateY(-4px) rotate(1deg);
             }
 
             50% {
                 transform: scale(1.05) translateY(0) rotate(0deg);
             }
 
-            75% {
-                transform: scale(1.02) translateY(3px) rotate(-1deg);
+            70% {
+                transform: scale(1.02) translateY(4px) rotate(-1deg);
             }
 
             100% {
@@ -80,16 +118,16 @@
                 transform: scale(1) rotate(0deg);
             }
 
-            25% {
-                transform: scale(1.03) rotate(1.5deg);
+            30% {
+                transform: scale(1.04) rotate(2deg);
             }
 
             50% {
-                transform: scale(1.05) rotate(0deg);
+                transform: scale(1.07) rotate(0deg);
             }
 
-            75% {
-                transform: scale(1.03) rotate(-1.5deg);
+            70% {
+                transform: scale(1.04) rotate(-2deg);
             }
 
             100% {
@@ -97,68 +135,212 @@
             }
         }
 
+        @keyframes outerWave {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.6;
+            }
+
+            30% {
+                transform: scale(1.1) rotate(-1deg);
+                opacity: 0.3;
+            }
+
+            60% {
+                transform: scale(1.15) rotate(1deg);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.6;
+            }
+        }
+
+        /* === 名前表示 === */
+        .name {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.5s;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === 職業表示 === */
+        .title {
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.7s;
+        }
+
+        /* === SNSアイコン === */
         .icons {
-            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.9s;
         }
 
         .icons a {
-            margin: 0 10px;
-            /* アイコン間の間隔 */
+            margin: 0 15px;
             color: #333;
-            shape-rendering: geometricPrecision;
-            backface-visibility: hidden;
-            /* アニメーション時のちらつき防止 */
-            transform: translateZ(0);
-            /* 描画の最適化 */
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             text-decoration: none;
-            /* 下線を消す */
         }
 
+        .icons a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+        }
+
+        /* === ナビゲーションボタン === */
         .buttons {
-            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 1.1s;
         }
 
         .buttons a {
-            margin: 0 10px;
-            padding: 10px 20px;
+            margin: 10px;
+            padding: 12px 25px;
             background-color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             color: #333;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            border-radius: 30px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
         .buttons a:hover {
-            background-color: rgba(255, 255, 255, 1);
+            background-color: #fff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
         }
 
+        /* === フッター === */
         .footer {
             position: absolute;
             bottom: 20px;
             left: 0;
             width: 100%;
             text-align: center;
-            color: #333;
-            font-size: 14px;
+            padding: 10px;
+            opacity: 0;
+            animation: fadeIn 1s forwards 1.5s;
         }
 
         .footer p {
             margin: 5px 0;
+            font-size: 14px;
+            color: #555;
         }
 
         .footer a {
-            color: #333;
+            color: #555;
             text-decoration: none;
+            transition: color 0.3s;
         }
 
         .footer a:hover {
+            color: #333;
             text-decoration: underline;
         }
 
-        @media (max-width: 600px) {
+        @keyframes fadeIn {
+            to {
+                opacity: 0.8;
+            }
+        }
+
+        /* === レスポンシブ対応 === */
+        @media (max-width: 768px) {
+            .circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .name {
+                font-size: 20px;
+            }
+
+            .icons a {
+                width: 45px;
+                height: 45px;
+                margin: 0 10px;
+            }
+
+            .buttons a {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .circle {
+                width: 100px;
+                height: 100px;
+            }
+
+            .icons {
+                margin-bottom: 20px;
+            }
+
+            .icons a {
+                width: 40px;
+                height: 40px;
+                margin: 0 8px;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .buttons a {
+                width: 80%;
+                text-align: center;
+                margin: 5px 0;
+            }
+
             .footer {
-                font-size: 12px;
                 bottom: 10px;
+            }
+
+            .footer p {
+                font-size: 12px;
             }
         }
     </style>
@@ -166,37 +348,55 @@
 
 <body>
     <div class="front">
-        <div class="circle"></div>
+        <div class="avatar-container">
+            <div class="circle" id="avatar"></div>
+        </div>
         <div class="icons">
-            <a href="https://github.com/frinfo702" target="_blank">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            <a href="https://github.com/frinfo702" target="_blank" aria-label="GitHub">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path
                         d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
                     </path>
                 </svg>
             </a>
-            <a href="https://x.com" target="_blank">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            <a href="https://x.com" target="_blank" aria-label="X">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
                     <path
                         d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z">
                     </path>
                 </svg>
             </a>
+            <a href="https://www.linkedin.com/in/frinfo702" target="_blank" aria-label="LinkedIn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+            </a>
         </div>
         <div class="buttons">
-            <a href="https://www.linkedin.com/in/frinfo702" target="_blank">Works</a>
+            <a href="#works" class="nav-btn" data-section="works">Works</a>
+            <a href="#skills" class="nav-btn" data-section="skills">Skills</a>
             <a href="https://deserted-bat-b50.notion.site/194cff96ac7080768860ca10ae32f458?v=197cff96ac708085b34d000c28004f30&pvs=4"
                 target="_blank">Blog</a>
+            <a href="#contact" class="nav-btn" data-section="contact">Contact</a>
         </div>
     </div>
+
     <div class="footer">
-        <p>©️frinfo702</p>
+        <p>©️ 2025 frinfo702 | <a href="#" id="theme-toggle">テーマ切替</a></p>
     </div>
+
     <canvas id="canvas"></canvas>
+
+    <!-- Three.jsを先に読み込む -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="script.js"></script>
+
+    <!-- メインのスクリプトを後に読み込む -->
+    <script src="anthoropic_sand.js"></script>
 </body>
 
 </html>

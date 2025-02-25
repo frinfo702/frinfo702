@@ -1,201 +1,707 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wave Animation</title>
+    <title>Portfolio | frinfo702</title>
     <style>
-        body {
+        /* === ベーススタイル === */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
             overflow: hidden;
+            background-color: #f8f9fa;
         }
 
         canvas {
             display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* === メインコンテンツ === */
+        .front {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        /* === アバターサークル === */
+        .avatar-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .circle {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #ffffff 0%, #E4E4DF 100%);
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: organicPulse 6s infinite ease-in-out;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease-out;
+        }
+
+        .circle:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .circle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-sizing: border-box;
+            animation: waveEdge 6.5s infinite ease-in-out;
+        }
+
+        .circle::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-sizing: border-box;
+            animation: outerWave 8s infinite ease-in-out;
+        }
+
+        @keyframes organicPulse {
+            0% {
+                transform: scale(1) translateY(0) rotate(0deg);
+            }
+
+            30% {
+                transform: scale(1.02) translateY(-4px) rotate(1deg);
+            }
+
+            50% {
+                transform: scale(1.05) translateY(0) rotate(0deg);
+            }
+
+            70% {
+                transform: scale(1.02) translateY(4px) rotate(-1deg);
+            }
+
+            100% {
+                transform: scale(1) translateY(0) rotate(0deg);
+            }
+        }
+
+        @keyframes waveEdge {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            30% {
+                transform: scale(1.04) rotate(2deg);
+            }
+
+            50% {
+                transform: scale(1.07) rotate(0deg);
+            }
+
+            70% {
+                transform: scale(1.04) rotate(-2deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes outerWave {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.6;
+            }
+
+            30% {
+                transform: scale(1.1) rotate(-1deg);
+                opacity: 0.3;
+            }
+
+            60% {
+                transform: scale(1.15) rotate(1deg);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.6;
+            }
+        }
+
+        /* === 名前表示 === */
+        .name {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.5s;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === 職業表示 === */
+        .title {
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.7s;
+        }
+
+        /* === SNSアイコン === */
+        .icons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 0.9s;
+        }
+
+        .icons a {
+            margin: 0 15px;
+            color: #333;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+        }
+
+        .icons a:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+        }
+
+        /* === ナビゲーションボタン === */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1s forwards 1.1s;
+        }
+
+        .buttons a {
+            margin: 10px;
+            padding: 12px 25px;
+            background-color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            color: #333;
+            border-radius: 30px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .buttons a:hover {
+            background-color: #fff;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+
+        /* === フッター === */
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            opacity: 0;
+            animation: fadeIn 1s forwards 1.5s;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .footer a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #333;
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 0.8;
+            }
+        }
+
+        /* === レスポンシブ対応 === */
+        @media (max-width: 768px) {
+            .circle {
+                width: 120px;
+                height: 120px;
+            }
+
+            .name {
+                font-size: 20px;
+            }
+
+            .icons a {
+                width: 45px;
+                height: 45px;
+                margin: 0 10px;
+            }
+
+            .buttons a {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .circle {
+                width: 100px;
+                height: 100px;
+            }
+
+            .icons {
+                margin-bottom: 20px;
+            }
+
+            .icons a {
+                width: 40px;
+                height: 40px;
+                margin: 0 8px;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .buttons a {
+                width: 80%;
+                text-align: center;
+                margin: 5px 0;
+            }
+
+            .footer {
+                bottom: 10px;
+            }
+
+            .footer p {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="front">
+        <div class="avatar-container">
+            <div class="circle" id="avatar"></div>
+        </div>
+        <div class="icons">
+            <a href="https://github.com/frinfo702" target="_blank" aria-label="GitHub">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
+                    </path>
+                </svg>
+            </a>
+            <a href="https://x.com" target="_blank" aria-label="X">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z">
+                    </path>
+                </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/frinfo702" target="_blank" aria-label="LinkedIn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                </svg>
+            </a>
+        </div>
+        <div class="buttons">
+            <a href="#works" class="nav-btn" data-section="works">Works</a>
+            <a href="#skills" class="nav-btn" data-section="skills">Skills</a>
+            <a href="https://deserted-bat-b50.notion.site/194cff96ac7080768860ca10ae32f458?v=197cff96ac708085b34d000c28004f30&pvs=4"
+                target="_blank">Blog</a>
+            <a href="#contact" class="nav-btn" data-section="contact">Contact</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>©️ 2025 frinfo702 | <a href="#" id="theme-toggle">テーマ切替</a></p>
+    </div>
+
     <canvas id="canvas"></canvas>
+
+    <!-- Three.jsを先に読み込む -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
+
+    <!-- メインのスクリプトを後に読み込む -->
+    <script src="anthoropic_sand.js"></script>
+    <!-- <script>
+        // === シェーダーコード ===
         const fragmentShader = `
-            uniform float time;
-            uniform vec2 resolution;
+        uniform float time;
+        uniform vec2 resolution;
+        uniform vec3 colorA;
+        uniform vec3 colorB;
+        uniform vec3 colorC;
+        uniform vec3 colorD;
+        uniform float isDark;
+
+        // 改良されたノイズ関数
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+        float snoise(vec2 v) {
+            const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+                                0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+                                -0.577350269189626, // -1.0 + 2.0 * C.x
+                                0.024390243902439); // 1.0 / 41.0
+            vec2 i = floor(v + dot(v, C.yy));
+            vec2 x0 = v - i + dot(i, C.xx);
+            vec2 i1;
+            i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+            i = mod289(i);
+            vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+            vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+            m = m*m;
+            m = m*m;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+            vec3 g;
+            g.x = a0.x * x0.x + h.x * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        float fbm(vec2 st) {
+            float value = 0.0;
+            float amplitude = 0.5;
+            float frequency = 1.0;
+            // Octaveを増やしてより複雑なパターンを生成
+            for (int i = 0; i < 5; i++) {
+                value += amplitude * snoise(st * frequency);
+                st = st * 2.1 + vec2(time * 0.05, time * 0.03);
+                amplitude *= 0.5;
+                frequency *= 2.0;
+            }
+            return value;
+        }
+
+        vec3 getColor(vec2 uv, float noise) {
+            // 斜めのグラデーション効果を強化
+            float diagonal = (uv.x + uv.y) * 0.5;
+            float wave = sin(diagonal * 6.0 - time * 0.2) * 0.1;
+            float y = uv.y + wave + noise * 0.15;
             
-            vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-            vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-            vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+            vec3 color;
+            if (y < 0.3) {
+                color = mix(colorA, colorB, smoothstep(0.0, 0.3, y));
+            } else if (y < 0.5) {
+                color = mix(colorB, colorC, smoothstep(0.3, 0.5, y));
+                // ダイアゴナルミキシングを強化
+                color = mix(color, colorD, smoothstep(0.4, 0.6, uv.x) * 0.7);
+            } else if (y < 0.7) {
+                color = mix(colorC, colorD, smoothstep(0.5, 0.7, y));
+                color = mix(color, colorA, noise * 0.3);
+            } else {
+                color = mix(colorD, colorA, smoothstep(0.7, 1.0, y));
+            }
             
-            float snoise(vec3 v) {
-                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            // すりガラス効果を向上
+            float frost = fbm(uv * 20.0 + vec2(time * 0.05, 0.0)) * 0.08;
+            vec3 highlightColor = isDark > 0.5 ? vec3(0.1, 0.1, 0.15) : vec3(1.0, 1.0, 1.0);
+            color = mix(color, highlightColor, frost);
+            
+            // 浮遊感のある光の粒子を追加
+            float particles = smoothstep(0.4, 0.6, fbm(uv * 15.0 + vec2(0.0, time * 0.1)));
+            particles *= smoothstep(0.7, 0.9, snoise(uv * 5.0 + time * 0.05)) * 0.5;
+            color += particles * 0.15 * (isDark > 0.5 ? vec3(0.8, 0.9, 1.0) : vec3(0.9, 0.95, 1.0));
+            
+            return color;
+        }
 
-                vec3 i  = floor(v + dot(v, C.yyy));
-                vec3 x0 =   v - i + dot(i, C.xxx);
-                vec3 g = step(x0.yzx, x0.xyz);
-                vec3 l = 1.0 - g;
-                vec3 i1 = min( g.xyz, l.zxy );
-                vec3 i2 = max( g.xyz, l.zxy );
-                vec3 x1 = x0 - i1 + C.xxx;
-                vec3 x2 = x0 - i2 + C.yyy;
-                vec3 x3 = x0 - D.yyy;
-                i = mod289(i);
-                vec4 p = permute( permute( permute(
-                          i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-                        + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
-                        + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
-                float n_ = 0.142857142857;
-                vec3 ns = n_ * D.wyz - D.xzx;
-                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-                vec4 x_ = floor(j * ns.z);
-                vec4 y_ = floor(j - 7.0 * x_);
-                vec4 x = x_ *ns.x + ns.yyyy;
-                vec4 y = y_ *ns.x + ns.yyyy;
-                vec4 h = 1.0 - abs(x) - abs(y);
-                vec4 b0 = vec4( x.xy, y.xy );
-                vec4 b1 = vec4( x.zw, y.zw );
-                vec4 s0 = floor(b0)*2.0 + 1.0;
-                vec4 s1 = floor(b1)*2.0 + 1.0;
-                vec4 sh = -step(h, vec4(0.0));
-                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
-                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
-                vec3 p0 = vec3(a0.xy,h.x);
-                vec3 p1 = vec3(a0.zw,h.y);
-                vec3 p2 = vec3(a1.xy,h.z);
-                vec3 p3 = vec3(a1.zw,h.w);
-                vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-                p0 *= norm.x;
-                p1 *= norm.y;
-                p2 *= norm.z;
-                p3 *= norm.w;
-                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-                m = m * m;
-                return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
-            }
-
-            float fbm(vec3 p) {
-                float sum = 0.0;
-                float amp = 1.0;
-                float freq = 1.0;
-                // より細かいノイズを重ねる
-                for(int i = 0; i < 6; i++) {
-                    sum += amp * snoise(p * freq);
-                    freq *= 2.0;
-                    amp *= 0.5;
-                }
-                return sum;
-            }
-
-            vec3 getColor(vec2 uv, float noise) {
-                // パステルカラーの定義
-                vec3 yellow = vec3(1.0, 0.835, 0.309);    // #FFD54F
-                vec3 orange = vec3(1.0, 0.718, 0.302);    // #FFB74D
-                vec3 blue = vec3(0.505, 0.831, 0.980);    // #81D4FA
-                vec3 turquoise = vec3(0.302, 0.816, 0.882); // #4DD0E1
-                vec3 purple = vec3(0.702, 0.616, 0.859);   // #B39DDB
-                vec3 white = vec3(1.0, 1.0, 1.0);
-
-                // 斜めのグラデーション効果
-                float diagonal = (uv.x + uv.y) * 0.5;
-                float wave = sin(diagonal * 5.0 - time * 0.2) * 0.1;
-                float y = uv.y + wave + noise * 0.2;
-
-                vec3 color;
-                if (y < 0.3) {
-                    color = mix(turquoise, blue, smoothstep(0.0, 0.3, y));
-                } else if (y < 0.5) {
-                    color = mix(blue, orange, smoothstep(0.3, 0.5, y));
-                } else if (y < 0.7) {
-                    color = mix(orange, yellow, smoothstep(0.5, 0.7, y));
-                } else {
-                    color = mix(yellow, white, smoothstep(0.7, 1.0, y));
-                }
-
-                // すりガラス効果
-                float frost = fbm(vec3(uv * 15.0, time * 0.1)) * 0.1;
-                color = mix(color, white, frost);
-
-                return color;
-            }
-
-            void main() {
-                vec2 uv = gl_FragCoord.xy / resolution.xy;
-                float aspect = resolution.x / resolution.y;
-                vec2 normalizedUv = vec2(uv.x * aspect, uv.y);
-
-                // 波動効果
-                float noise1 = fbm(vec3(normalizedUv * 3.0 + time * 0.1, time * 0.1));
-                float noise2 = fbm(vec3(normalizedUv * 5.0 - time * 0.15, time * 0.2));
-                float finalNoise = noise1 * 0.6 + noise2 * 0.4;
-
-                vec3 color = getColor(uv, finalNoise);
-
-                // ビネット効果
-                float vignette = smoothstep(1.5, 0.3, length((uv - 0.5) * vec2(aspect, 1.0)));
-                color *= mix(0.9, 1.0, vignette);
-
-                // 最終的な色調整
-                color = pow(color, vec3(0.9));
-
-                gl_FragColor = vec4(color, 1.0);
-            }
+        void main() {
+            vec2 uv = gl_FragCoord.xy / resolution.xy;
+            float noise = fbm(uv * 8.0 + vec2(time * 0.1, time * 0.05));
+            vec3 color = getColor(uv, noise);
+            
+            // ビネットエフェクト (画面の端を少し暗く)
+            float vignette = 1.0 - smoothstep(0.5, 1.5, length((uv - 0.5) * 2.0));
+            color *= mix(0.9, 1.0, vignette);
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
         `;
 
         const vertexShader = `
-            void main() {
-                gl_Position = vec4(position, 1.0);
-            }
+        void main() {
+            gl_Position = vec4(position, 1.0);
+        }
         `;
 
-        // Three.jsのセットアップ
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-        const renderer = new THREE.WebGLRenderer({
-            canvas: document.querySelector('#canvas'),
-            antialias: true
-        });
+        // === Three.jsのセットアップ ===
+        function initThreeJS() {
+            const scene = new THREE.Scene();
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('canvas'),
+                antialias: true,
+                alpha: true
+            });
 
-        // リサイズハンドラ
-        function onWindowResize() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            renderer.setSize(width, height);
-            material.uniforms.resolution.value.x = width;
-            material.uniforms.resolution.value.y = height;
-        }
+            // カラーテーマの設定
+            let isDarkTheme = false;
+            const lightColors = {
+                A: new THREE.Vector3(0.149, 0.651, 0.604), // emerald
+                B: new THREE.Vector3(0.302, 0.714, 0.675), // turquoise
+                C: new THREE.Vector3(0.565, 0.792, 0.976), // lightBlue
+                D: new THREE.Vector3(1.0, 0.671, 0.569)    // salmon
+            };
 
-        // マテリアルの作成
-        const material = new THREE.ShaderMaterial({
-            fragmentShader,
-            vertexShader,
-            uniforms: {
-                time: { value: 0 },
-                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+            const darkColors = {
+                A: new THREE.Vector3(0.05, 0.12, 0.2),     // dark navy
+                B: new THREE.Vector3(0.1, 0.18, 0.32),     // navy
+                C: new THREE.Vector3(0.15, 0.25, 0.4),     // deep blue
+                D: new THREE.Vector3(0.22, 0.3, 0.4)       // slate
+            };
+
+            // シェーダーマテリアルの作成
+            const material = new THREE.ShaderMaterial({
+                fragmentShader,
+                vertexShader,
+                uniforms: {
+                    time: { value: 0 },
+                    resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                    colorA: { value: lightColors.A },
+                    colorB: { value: lightColors.B },
+                    colorC: { value: lightColors.C },
+                    colorD: { value: lightColors.D },
+                    isDark: { value: 0.0 }
+                }
+            });
+
+            // テーマ切り替え
+            document.getElementById('theme-toggle').addEventListener('click', function (e) {
+                e.preventDefault();
+                isDarkTheme = !isDarkTheme;
+
+                // テーマに基づいてシェーダーの色を更新
+                material.uniforms.colorA.value = isDarkTheme ? darkColors.A : lightColors.A;
+                material.uniforms.colorB.value = isDarkTheme ? darkColors.B : lightColors.B;
+                material.uniforms.colorC.value = isDarkTheme ? darkColors.C : lightColors.C;
+                material.uniforms.colorD.value = isDarkTheme ? darkColors.D : lightColors.D;
+                material.uniforms.isDark.value = isDarkTheme ? 1.0 : 0.0;
+
+                // ボディクラスを更新
+                document.body.classList.toggle('dark-theme');
+            });
+
+            // メッシュの作成
+            const geometry = new THREE.PlaneGeometry(2, 2);
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            // リサイズハンドラ
+            function onWindowResize() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                renderer.setSize(width, height);
+                material.uniforms.resolution.value.x = width;
+                material.uniforms.resolution.value.y = height;
             }
-        });
 
-        // メッシュの作成
-        const geometry = new THREE.PlaneGeometry(2, 2);
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
+            // アニメーションループ
+            function animate(time) {
+                material.uniforms.time.value = time * 0.001;
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            }
 
-        // アニメーションループ
-        function animate(time) {
-            material.uniforms.time.value = time * 0.001;
-            renderer.render(scene, camera);
-            requestAnimationFrame(animate);
+            // イベントリスナーの設定
+            window.addEventListener('resize', onWindowResize);
+            onWindowResize();
+            animate(0);
+
+            // アバタークリックイベント
+            document.getElementById('avatar').addEventListener('click', function () {
+                // アバターをクリックしたときのランダムなアニメーション
+                const randomEffect = Math.floor(Math.random() * 3);
+                const circle = this;
+
+                if (randomEffect === 0) {
+                    // エフェクト1: 回転
+                    circle.style.animation = 'none';
+                    setTimeout(() => {
+                        circle.style.animation = 'spin 1s ease-in-out';
+                        setTimeout(() => {
+                            circle.style.animation = 'organicPulse 6s infinite ease-in-out';
+                        }, 1000);
+                    }, 10);
+                } else if (randomEffect === 1) {
+                    // エフェクト2: ジャンプ
+                    circle.style.animation = 'none';
+                    setTimeout(() => {
+                        circle.style.animation = 'jump 0.5s ease-in-out';
+                        setTimeout(() => {
+                            circle.style.animation = 'organicPulse 6s infinite ease-in-out';
+                        }, 500);
+                    }, 10);
+                } else {
+                    // エフェクト3: 拡大縮小
+                    circle.style.animation = 'none';
+                    setTimeout(() => {
+                        circle.style.animation = 'popBounce 0.7s ease-in-out';
+                        setTimeout(() => {
+                            circle.style.animation = 'organicPulse 6s infinite ease-in-out';
+                        }, 700);
+                    }, 10);
+                }
+            });
+
+            // ページ読み込み完了イベント
+            window.addEventListener('load', function () {
+                document.body.classList.add('loaded');
+            });
         }
 
-        // イベントリスナーの設定
-        window.addEventListener('resize', onWindowResize);
-        onWindowResize();
-        animate(0);
-    </script>
+        // === アニメーションスタイルの動的追加 ===
+        function addExtraStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg) scale(1); }
+                    50% { transform: rotate(180deg) scale(1.2); }
+                    100% { transform: rotate(360deg) scale(1); }
+                }
+                
+                @keyframes jump {
+                    0% { transform: translateY(0) scale(1); }
+                    50% { transform: translateY(-30px) scale(0.9); }
+                    100% { transform: translateY(0) scale(1); }
+                }
+                
+                @keyframes popBounce {
+                    0% { transform: scale(1); }
+                    40% { transform: scale(1.3); }
+                    60% { transform: scale(0.8); }
+                    80% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+                
+                .dark-theme {
+                    color: #e0e0e0;
+                }
+                
+                .dark-theme .name, .dark-theme .title {
+                    color: #fff;
+                }
+                
+                .dark-theme .icons a {
+                    color: #e0e0e0;
+                    background-color: rgba(30, 30, 40, 0.7);
+                }
+                
+                .dark-theme .icons a:hover {
+                    background-color: rgba(40, 40, 50, 0.9);
+                }
+                
+                .dark-theme .buttons a {
+                    background-color: rgba(30, 30, 40, 0.8);
+                    color: #e0e0e0;
+                }
+                
+                .dark-theme .buttons a:hover {
+                    background-color: rgba(40, 40, 50, 0.9);
+                }
+                
+                .dark-theme .footer p, .dark-theme .footer a {
+                    color: #aaa;
+                }
+                
+                .dark-theme .footer a:hover {
+                    color: #fff;
+                }
+                
+                .loaded .front > * {
+                    animation-play-state: running;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            addExtraStyles();
+            initThreeJS();
+        });
+    </script> -->
 </body>
 
 </html>
-<!-- `#FFE082`, `#FFAB91`, `#90CAF9`, `#B39DDB`, `#4DB6AC`, `#26A69A` -->
